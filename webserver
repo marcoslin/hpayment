@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+
+/**
+ * Usage: $0 [http_port] [root_dir]
+ *
+ * Note: If http_port is passed, browser is not auto launched
+ */
+
+var express = require('express'),
+	app = express(),
+	http_port = 8000,
+	root_dir = process.cwd() + "/www/";
+
+app.get('/*', function(req, res) {
+	req_file = root_dir + req.path;
+	res.sendfile(req_file);
+	console.log('path: ', req_file);
+});
+
+
+var server = app.listen(http_port);
+console.log("# Web Server listening on port " + server.address().port + " for " + root_dir)
+
+

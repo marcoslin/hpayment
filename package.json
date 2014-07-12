@@ -1,0 +1,22 @@
+{
+  "name": "hpayment",
+  "version": "0.1.0",
+  "description": "H-Ack Payment July 2014",
+  "main": "webserver",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marcoslin/hpayment"
+  },
+  "author": "Marcos Lin <marcos.lin@farport.co.uk> (https://plus.google.com/+MarcosLin)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/marcoslin/hpayment/issues"
+  },
+  "homepage": "https://github.com/marcoslin/hpayment",
+  "dependencies": {
+    "express": "^4.6.0"
+  }
+}
