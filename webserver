@@ -9,13 +9,87 @@
 var express = require('express'),
 	app = express(),
 	http_port = 8000,
-	root_dir = process.cwd() + "/www/";
+	root_dir = process.cwd() + "/www/",
+	net = require('net'),
+	http = require('http'),
+	kitchen_host = "192.168.1.100",
+	kitchen_port = 9100,
+	receipt_host = "192.168.1.10",
+	receipt_port = 80;
 
-app.get('/*', function(req, res) {
+app.get('/order/:id', function (req, res) {
+    console.log("order_id: " + req.params.id);
+
+    var socket = net.createConnection(kitchen_port, kitchen_host);
+
+    socket.on('data', function(data) {
+        // Log the response from the HTTP server.
+        console.log('RESPONSE: ' + data);
+    }).on('connect', function() {
+        // Manually write an HTTP request.
+        console.log("WRITE");
+        socket.write("\nORDER NUMBER: " + req.params.id + "\n\n");
+        socket.write("1. Pizza\n");
+        socket.write("2. Beer\n");
+        socket.write("3. Coffe\n\n\n\n\n\n\n\n\n\n");
+        socket.end();
+    }).on('end', function() {
+        res.send('Accepted order_id ' + req.params.id);
+    }).on('error', function (e) {
+        res.send('Error code: ' + e.code);
+    });
+
+});
+
+
+app.get('/ready', function (req, res) {
+    console.log("ready");
+
+    var receipt_data =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        + "<Service>"
+        + "    <cmd>=R1/$800/(PIZZA)</cmd>"
+        + "    <cmd>=R1/$400/(BEER)</cmd>"
+        + "    <cmd>=R1/$70/(COFFER)</cmd>"
+        + "    <cmd>=T</cmd>"
+        + "    <cmd>=c</cmd>"
+        + "</Service>";
+    console.log("Receipt data len: " + receipt_data.length);
+
+
+    var hreq = http.request({
+       host: receipt_host,
+       port: receipt_port,
+       path: "/service.cgi",
+       //path: "/",
+       method: 'POST',
+       headers: {
+           'Content-Type': 'application/x-www-form-urlencoded',
+           'Content-Length': receipt_data.length
+       }
+    }, function(resp) {
+       console.log( resp.statusCode );
+       var buffer = "";
+       resp.on( "data", function( data ) { buffer = buffer + data; } );
+       resp.on( "end", function( data ) {
+        console.log( buffer );
+        console.log("buffer len: " + buffer.length);
+       });
+
+       res.send('Receipt printed');
+    });
+
+    //hreq.write( receipt_data );
+    hreq.end( receipt_data );
+});
+
+app.get('/app/*', function(req, res) {
 	req_file = root_dir + req.path;
 	res.sendfile(req_file);
 	console.log('path: ', req_file);
 });
+
+
 
 
 var server = app.listen(http_port);
